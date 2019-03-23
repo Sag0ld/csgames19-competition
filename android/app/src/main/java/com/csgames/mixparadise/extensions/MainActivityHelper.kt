@@ -7,8 +7,15 @@ import android.view.ViewGroup
 import androidx.core.view.doOnLayout
 import com.csgames.mixparadise.Blender
 import com.csgames.mixparadise.MainActivity
+import com.csgames.mixparadise.api.Api
+import com.csgames.mixparadise.api.dto.PostServeRequest
+import com.csgames.mixparadise.api.dto.PostServeResponse
+import com.csgames.mixparadise.api.dto.ServeIngredientAssembler
 import com.csgames.mixparadise.ingredients.IngredientsBottomSheetDialogFragment
 import kotlinx.android.synthetic.main.view_blender_with_table.*
+import retrofit2.Call
+import retrofit2.Callback
+import retrofit2.Response
 
 private const val ADD_INGREDIENTS_FRAGMENT_TAG = "ADD_INGREDIENTS_FRAGMENT_TAG"
 
@@ -42,9 +49,17 @@ fun MainActivity.setupListeners(blender: Blender, ingredientsDialog: Ingredients
     }
 
     serveButton.setOnClickListener {
-        blender.empty()
-        addIngredientsButton.visibility = View.VISIBLE
-        serveButton.visibility = View.GONE
+        Api.drinkService.serve(PostServeRequest(ServeIngredientAssembler.from(blender.ingredientsIdToOunces))).enqueue(object : Callback<PostServeResponse> {
+            override fun onResponse(call: Call<PostServeResponse>, response: Response<PostServeResponse>) {
+                blender.empty()
+                addIngredientsButton.visibility = View.VISIBLE
+                serveButton.visibility = View.GONE
+            }
+
+            override fun onFailure(call: Call<PostServeResponse>, t: Throwable) {
+
+            }
+        })
     }
 
     addIngredientsButton.setOnClickListener {
